@@ -13,6 +13,7 @@ class User extends Authenticatable
 
     /**
      * The attributes that are mass assignable.
+     * omaga
      *
      * @var array<int, string>
      */
@@ -20,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'testing'
     ];
 
     /**
