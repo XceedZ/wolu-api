@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -10,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 class UserController extends Controller
 {
     /**
-     * Handle a login request to the application.
+     * Menangani permintaan login ke aplikasi.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Http\JsonResponse
@@ -20,23 +21,34 @@ class UserController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'username' => 'required|string',
             'password' => 'required',
         ]);
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+    
+        if (Auth::attempt($request->only('username', 'password'))) {
+            $user = User::where('username', $request->username)->first();
+            $token = $user->createToken('auth_token')->plainTextToken;
+    
+            return response()->json([
+                'token' => $token,
+                'user' => [
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'fullname' => $user->fullname,
+                    'nis' => $user->nis,
+                    'role' => $user->role,
+                ]
+            ], 200);
         }
-
-        return response()->json(['message' => 'Authenticated']);
+    
+        throw ValidationException::withMessages([
+            'username' => ['The provided credentials are incorrect.'],
+        ]);
     }
 
     /**
-     * Handle a registration request for the application.
+     * Menangani permintaan pendaftaran untuk aplikasi.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
@@ -51,11 +63,12 @@ class UserController extends Controller
             'password' => 'required',
             'username' => 'nullable|unique:users',
             'nis' => 'nullable|integer',
-            'role' => 'boolean',
+            'role' => 'required|in:' . User::ROLE_STUDENT . ',' . User::ROLE_TEACHER,
         ], [
-            'email.unique' => 'The email has already been taken.',
-            'username.unique' => 'The username has already been taken.',
-            'nis.integer' => 'The NIS must be an integer value.'
+            'email.unique' => 'Email sudah terdaftar.',
+            'username.unique' => 'Username sudah terdaftar.',
+            'nis.integer' => 'NIS harus berupa nilai integer.',
+            'role.in' => 'Peran tidak valid.',
         ]);
 
         $user = new User();
@@ -67,6 +80,6 @@ class UserController extends Controller
         $user->role = $request->role;
         $user->save();
 
-        return response()->json(['message' => 'User created successfully'], 201);
+        return response()->json(['message' => 'Pengguna berhasil dibuat'], 201);
     }
 }
