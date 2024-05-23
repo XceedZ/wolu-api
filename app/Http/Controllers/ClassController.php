@@ -25,32 +25,33 @@ class ClassController extends Controller
             'background_img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'teacher_id' => 'required|exists:users,id',
         ]);
-
+    
         // Memindahkan gambar ke direktori public/images
         $imageName = time().'.'.$request->background_img->extension();
         $request->background_img->move(public_path('images'), $imageName);
-
+    
         // Membuat record class baru
         $class = new Classes();
         $class->class_name = $request->class_name;
         $class->description = $request->description;
         $class->background_img = 'images/'.$imageName; // Simpan path gambar
         $class->teacher_id = $request->teacher_id;
+        $class->generateShareToken(); // Generate share token
         $class->save();
-
+    
         Log::info('Class created with ID: ' . $class->id);
-
+    
         // Tambahkan data ke tabel class_users
         $classUser = new ClassUsers();
         $classUser->class_id = $class->id;
         $classUser->user_id = $request->teacher_id;
         $classUser->save();
-
+    
         Log::info('ClassUser created: ', ['class_id' => $class->id, 'user_id' => $request->teacher_id]);
-
+    
         return response()->json(['message' => 'Class created successfully', 'class' => $class], 201);
     }
-
+    
     // Mendapatkan detail class berdasarkan ID
     public function show($id)
     {

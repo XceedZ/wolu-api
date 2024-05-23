@@ -30,9 +30,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/tasks/{id}', [TaskController::class, 'update']);
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
 
-      // Rute untuk ClassUsersController
-      Route::post('/classes/{class_id}/users/{user_id}', [ClassUsersController::class, 'store']);
-      Route::delete('/classes/{class_id}/users/{user_id}', [ClassUsersController::class, 'destroy']);
-      Route::get('/classes/{user_id}/users', [ClassUsersController::class, 'index']);
+    // Rute untuk ClassUsersController
+    Route::post('/classes/{class_id}/users/{user_id}', [ClassUsersController::class, 'store']);
+    Route::delete('/classes/{class_id}/users/{user_id}', [ClassUsersController::class, 'destroy']);
+    Route::get('/classes/{user_id}/users', [ClassUsersController::class, 'index']);
+    Route::get('/classes/{class_id}/members', [ClassUsersController::class, 'getUsersInClass']);
 
+    // Sharelink Class
+    Route::post('/classes/{classId}/share', [UserController::class, 'shareClass']);
+    Route::post('/joinclasses/{shareToken}', [UserController::class, 'joinClass']);
+    Route::get('/joinclasses/{shareToken}', [UserController::class, 'joinClass']);
 });
