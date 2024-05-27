@@ -6,55 +6,59 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Classes;
+use Illuminate\Support\Str; // Import namespace Str
+use Illuminate\Support\Facades\Log; // Import namespace Log
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Carbon;
+
 
 class UserController extends Controller
 {
     public function redirectToGoogle()
-    {
-        return Socialite::driver('google')->redirect();
-    }
+{
+    return Socialite::driver('google')->redirect();
+}
 
-    public function handleGoogleCallback()
-    {
-        try {
-            $googleUser = Socialite::driver('google')->user();
-            $user = User::where('email', $googleUser->getEmail())->first();
+public function handleGoogleCallback()
+{
+    try {
+        $googleUser = Socialite::driver('google')->user();
+        $user = User::where('email', $googleUser->getEmail())->first();
 
-            if ($user) {
-                Auth::login($user);
-            } else {
-                $user = User::create([
-                    'fullname' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                ]);
-
-                Auth::login($user);
+        if ($user) {
+            if (!$user->google_id) {
+                $user->google_id = $googleUser->getId();
+                $user->save();
             }
+            Auth::login($user);
+        } else {
+            $user = User::create([
+                'fullname' => $googleUser->getName(),
+                'email' => $googleUser->getEmail(),
+                'google_id' => $googleUser->getId(),
+                'password' => Hash::make(Str::random(24)), 
+                'role' => null, 
+            ]);
 
-            // Buat token setelah login
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            return response()->json([
-                'token' => $token,
-                'user' => [
-                    'id' => $user->id,
-                    'username' => $user->username,
-                    'email' => $user->email,
-                    'fullname' => $user->fullname,
-                    'nis' => $user->nis,
-                    'role' => $user->role,
-                ]
-            ], 200);
-
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Tidak dapat login dengan Google'], 500);
+            Auth::login($user);
         }
-    }
 
-    // Metode login manual dan signup seperti yang sudah ada
+        $expiresAt = Carbon::now()->addWeek();
+    
+        $token = $user->createToken('auth_token', ['*'], $expiresAt)->plainTextToken;
+
+        return redirect("http://localhost:5173/google-callback?token={$token}&id={$user->id}&username={$user->username}&email={$user->email}&fullname={$user->fullname}&nis={$user->nis}&role={$user->role}&google_id={$user->google_id}");
+    } catch (\Exception $e) {
+        Log::error('Google login error: ' . $e->getMessage());
+        Log::error('Trace: ' . $e->getTraceAsString());
+
+        return response()->json(['error' => 'Tidak dapat login dengan Google', 'message' => $e->getMessage()], 500);
+    }
+}
+
+
     public function login(Request $request)
     {
         $request->validate([
@@ -64,12 +68,16 @@ class UserController extends Controller
     
         if (Auth::attempt($request->only('username', 'password'))) {
             $user = User::where('username', $request->username)->first();
-            $token = $user->createToken('auth_token')->plainTextToken;
+    
+            $expiresAt = Carbon::now()->addWeek();
+    
+            $token = $user->createToken('auth_token', ['*'], $expiresAt)->plainTextToken;
     
             return response()->json([
                 'token' => $token,
                 'user' => [
                     'id' => $user->id,
+                    'google_id' => $user->google_id,
                     'username' => $user->username,
                     'email' => $user->email,
                     'fullname' => $user->fullname,

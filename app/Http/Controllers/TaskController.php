@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Task; // Tambahkan baris ini
+use App\Models\Task;
+use App\Models\TaskUser; // Pastikan model ini diimpor
 
 class TaskController extends Controller
 {
@@ -22,7 +23,7 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'points' => 'nullable|integer',
-            'deadline' => 'nullable|date',
+            'deadline' => 'nullable|string',
             'teacher_id' => 'required|exists:users,id',
         ]);
 
@@ -34,6 +35,12 @@ class TaskController extends Controller
         $task->deadline = $request->deadline;
         $task->teacher_id = $request->teacher_id;
         $task->save();
+
+        // Simpan ke tabel relasi tasks_users
+        $taskUser = new TaskUser();
+        $taskUser->task_id = $task->id;
+        $taskUser->user_id = $request->teacher_id;
+        $taskUser->save();
 
         return response()->json(['message' => 'Task created successfully', 'task' => $task], 201);
     }
@@ -76,5 +83,12 @@ class TaskController extends Controller
         $task->delete();
 
         return response()->json(['message' => 'Task deleted successfully']);
+    }
+
+    // Method baru untuk mendapatkan semua tasks berdasarkan class_id
+    public function getTasksByClassId($classId)
+    {
+        $tasks = Task::where('class_id', $classId)->get();
+        return response()->json($tasks);
     }
 }

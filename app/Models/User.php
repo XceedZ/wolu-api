@@ -29,6 +29,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'username',
         'nis',
         'role',
+        'google_id', 
+        'avatar'
     ];
 
     /**
@@ -52,5 +54,9 @@ class User extends Authenticatable implements MustVerifyEmail
     public function classes()
     {
         return $this->belongsToMany(Classes::class, 'classes_users', 'user_id', 'class_id');
+    }
+    public function tasks()
+    {
+        return $this->belongsToMany(Task::class, 'tasks_users', 'user_id', 'task_id');
     }
 }

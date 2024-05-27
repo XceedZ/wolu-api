@@ -6,6 +6,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ClassUsersController;
+use App\Http\Middleware\CheckTokenExpiry;
+
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -16,7 +18,8 @@ Route::post('/signup', [UserController::class, 'signup']);
 Route::post('/login', [UserController::class, 'login']);
 
 // Rute untuk ClassController
-Route::middleware(['auth:sanctum'])->group(function () {
+
+Route::middleware(['auth:sanctum', CheckTokenExpiry::class])->group(function () {    
     Route::get('/classes', [ClassController::class, 'index']);
     Route::post('/classes', [ClassController::class, 'store']);
     Route::get('/classes/{id}', [ClassController::class, 'show']);
@@ -29,6 +32,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/tasks/{id}', [TaskController::class, 'show']);
     Route::put('/tasks/{id}', [TaskController::class, 'update']);
     Route::delete('/tasks/{id}', [TaskController::class, 'destroy']);
+    Route::get('/tasks/class/{classId}', [TaskController::class, 'getTasksByClassId']);
+
 
     // Rute untuk ClassUsersController
     Route::post('/classes/{class_id}/users/{user_id}', [ClassUsersController::class, 'store']);
@@ -40,4 +45,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/classes/{classId}/share', [UserController::class, 'shareClass']);
     Route::post('/joinclasses/{shareToken}', [UserController::class, 'joinClass']);
     Route::get('/joinclasses/{shareToken}', [UserController::class, 'joinClass']);
+
+    
 });
