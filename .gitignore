@@ -1,19 +1,31 @@
-/.phpunit.cache
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
+# Laravel & PHP
 /vendor
-.env
-.env.backup
-.env.production
+/.phpunit.cache
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
 auth.json
+
+# Environment Files
+.env
+.env.backup
+.env.production
+
+# Build & Cache
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+
+# Node.js
+/node_modules
 npm-debug.log
 yarn-error.log
+
+# Editor Specific
 /.fleet
 /.idea
 /.vscode
+
+# Misc
+/.DS_Store

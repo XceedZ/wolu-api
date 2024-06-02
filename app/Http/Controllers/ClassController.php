@@ -9,14 +9,12 @@ use Illuminate\Support\Facades\Log;
 
 class ClassController extends Controller
 {
-    // Mendapatkan daftar semua classes
-    public function index()
+        public function index()
     {
         $classes = Classes::all();
         return response()->json($classes);
     }
 
-    // Menyimpan class baru
     public function store(Request $request)
     {
         $request->validate([
@@ -26,22 +24,19 @@ class ClassController extends Controller
             'teacher_id' => 'required|exists:users,id',
         ]);
     
-        // Memindahkan gambar ke direktori public/images
         $imageName = time().'.'.$request->background_img->extension();
         $request->background_img->move(public_path('images'), $imageName);
     
-        // Membuat record class baru
         $class = new Classes();
         $class->class_name = $request->class_name;
         $class->description = $request->description;
-        $class->background_img = 'images/'.$imageName; // Simpan path gambar
+        $class->background_img = 'images/'.$imageName;
         $class->teacher_id = $request->teacher_id;
-        $class->generateShareToken(); // Generate share token
+        $class->generateShareToken(); 
         $class->save();
     
         Log::info('Class created with ID: ' . $class->id);
     
-        // Tambahkan data ke tabel class_users
         $classUser = new ClassUsers();
         $classUser->class_id = $class->id;
         $classUser->user_id = $request->teacher_id;
@@ -52,14 +47,12 @@ class ClassController extends Controller
         return response()->json(['message' => 'Class created successfully', 'class' => $class], 201);
     }
     
-    // Mendapatkan detail class berdasarkan ID
     public function show($id)
     {
         $class = Classes::findOrFail($id);
         return response()->json($class);
     }
 
-    // Memperbarui class berdasarkan ID
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -79,7 +72,6 @@ class ClassController extends Controller
         return response()->json(['message' => 'Class updated successfully', 'class' => $class]);
     }
 
-    // Menghapus class berdasarkan ID
     public function destroy($id)
     {
         $class = Classes::findOrFail($id);

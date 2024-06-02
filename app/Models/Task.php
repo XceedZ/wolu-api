@@ -16,5 +16,23 @@ class Task extends Model
         'points',
         'deadline',
         'teacher_id',
+        'files_upload',
     ];
+
+    public function files()
+    {
+        return $this->hasMany(TaskFile::class);
+    }
+
+    public function taskSubmission()
+    {
+        return $this->hasOne(TaskSubmission::class);
+    }
+
+    // Relasi untuk mengambil poin dari task langsung
+    public function points()
+    {
+        return $this->hasOne(Task::class);
+    }
 }
+

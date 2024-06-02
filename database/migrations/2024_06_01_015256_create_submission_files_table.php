@@ -8,16 +8,18 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('classes_users', function (Blueprint $table) {
+        Schema::create('submission_files', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');
+            $table->foreignId('submission_id')->constrained('task_submissions')->onDelete('cascade');
+            $table->string('file_path');
+            $table->string('file_name');
             $table->timestamps();
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('classes_users');
+        Schema::dropIfExists('submission_files');
     }
 };
+

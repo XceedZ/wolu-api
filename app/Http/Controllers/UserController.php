@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Classes;
-use Illuminate\Support\Str; // Import namespace Str
-use Illuminate\Support\Facades\Log; // Import namespace Log
+use Illuminate\Support\Str; 
+use Illuminate\Support\Facades\Log; 
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -57,8 +57,6 @@ public function handleGoogleCallback()
         return response()->json(['error' => 'Tidak dapat login dengan Google', 'message' => $e->getMessage()], 500);
     }
 }
-
-
     public function login(Request $request)
     {
         $request->validate([
@@ -100,12 +98,12 @@ public function handleGoogleCallback()
             'password' => 'required',
             'username' => 'nullable|unique:users',
             'nis' => 'nullable|integer',
-            'role' => 'required|in:' . User::ROLE_STUDENT . ',' . User::ROLE_TEACHER,
+            'role' => 'required'
         ], [
             'email.unique' => 'Email sudah terdaftar.',
             'username.unique' => 'Username sudah terdaftar.',
             'nis.integer' => 'NIS harus berupa nilai integer.',
-            'role.in' => 'Peran tidak valid.',
+            'role' => 'Peran tidak valid.',
         ]);
 
         $user = new User();
@@ -131,7 +129,7 @@ public function handleGoogleCallback()
         $class->generateShareToken();
     }
 
-    $shareLink = url('/joinclasses/' . $class->share_token); // Link yang akan dibagikan
+    $shareLink = url('/joinclasses/' . $class->share_token); 
 
     return response()->json(['share_link' => $shareLink], 200);
 }
@@ -149,7 +147,6 @@ public function joinClass($shareToken)
         return response()->json(['message' => 'Anda sudah tergabung dalam kelas ini'], 200);
     }
 
-    // Tambahkan user ke kelas
     $class->users()->attach($user->id);
 
     return response()->json(['message' => 'Berhasil bergabung dengan kelas'], 200);

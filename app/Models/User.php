@@ -18,9 +18,6 @@ class User extends Authenticatable implements MustVerifyEmail
      * @var array
      */
 
-    const ROLE_STUDENT = 0;
-    const ROLE_TEACHER = 1;
-
     protected $fillable = [
         'name',
         'email',
