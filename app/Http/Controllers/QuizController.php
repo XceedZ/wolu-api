@@ -23,6 +23,42 @@ class QuizController extends Controller
         return response()->json($quiz);
     }
 
+    public function getQuizForStudent($id)
+    {
+        $quiz = Quiz::with('questions.answers')->findOrFail($id);
+        return response()->json($quiz);
+    }
+
+    public function submitQuizResult(Request $request, $quizId)
+    {
+        $request->validate([
+            'student_id' => 'required|exists:users,id',
+            'answers' => 'required|array',
+            'answers.*.question_id' => 'required|exists:questions,id',
+            'answers.*.selected_answer_id' => 'required|exists:answers,id',
+        ]);
+
+        $quiz = Quiz::findOrFail($quizId);
+        $score = 0;
+
+        foreach ($request->answers as $answer) {
+            $correctAnswer = $quiz->questions()
+                ->findOrFail($answer['question_id'])
+                ->answers()
+                ->where('is_correct', true)
+                ->first();
+
+            if ($correctAnswer->id == $answer['selected_answer_id']) {
+                $score++;
+            }
+        }
+
+        $totalQuestions = $quiz->questions()->count();
+        $percentageScore = ($score / $totalQuestions) * 100;
+
+        return response()->json(['score' => $percentageScore], 201);
+    }
+
     public function store(Request $request)
     {
         $request->validate([

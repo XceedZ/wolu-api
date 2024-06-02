@@ -72,4 +72,7 @@ Route::middleware(['auth:sanctum', CheckTokenExpiry::class])->group(function () 
     Route::get('quizzes/{quizId}/results/{studentId}', [QuizController::class, 'getResult']);
     Route::get('classes/{classId}/quizzes', [QuizController::class, 'getQuizzesByClass']);
 
+    Route::get('quizzes/{quizId}', [QuizController::class, 'getQuizForStudent']);
+
+
 });
